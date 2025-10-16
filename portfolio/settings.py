@@ -53,6 +53,10 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "corsheaders",
+
+
+    "apps.contact.apps.ContactConfig",
+    "apps.portfolio.apps.PortfolioConfig"
 ]
 
 MIDDLEWARE = [
