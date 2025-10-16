@@ -18,7 +18,7 @@ class Project(models.Model):
     full_description = models.TextField()
     challenge = models.TextField()
     solution = models.TextField()
-    image = models.URLField(max_length=500, help_text="URL de la imagen del proyecto")
+    image = models.ImageField(upload_to="projects/", null=True, blank=True)
     demo_url = models.URLField(max_length=500, blank=True, null=True)
     github_url = models.URLField(max_length=500, blank=True, null=True)
     
