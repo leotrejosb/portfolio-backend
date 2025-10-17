@@ -14,3 +14,12 @@ class ContactSubmission(models.Model):
         verbose_name = "Contact Submission"
         verbose_name_plural = "Contact Submissions"
         ordering = ['-created_at']
+
+
+class CVDocument(models.Model):
+    name = models.CharField(max_length=100, default="CV Leonardo Trejos")
+    cv_file = models.FileField(upload_to='cvs/') # El archivo se guardará en /media/cvs/
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name        
