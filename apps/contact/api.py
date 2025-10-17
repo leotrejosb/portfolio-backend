@@ -22,6 +22,7 @@ class ContactSubmissionViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet)
         methods=['get'],
         permission_classes=[AllowAny], # 🛡️ CAMBIA A [IsAuthenticated] PARA PROTEGERLO
         url_path='download-cv'
+        renderer_classes=[PassthroughRenderer] # Use the new renderer here
     )
     def download_cv(self, request):
         """

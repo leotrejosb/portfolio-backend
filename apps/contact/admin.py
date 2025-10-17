@@ -19,10 +19,5 @@ class ContactSubmissionAdmin(admin.ModelAdmin):
 # -------------------------------------------------------------------
 @admin.register(CVDocument)
 class CVDocumentAdmin(admin.ModelAdmin):
-    """
-    Personaliza la vista del admin para los documentos de CV.
-    """
-    list_display = ('name', 'cv_file', 'uploaded_at')
-    list_filter = ('uploaded_at',)
-    search_fields = ('name',)
+   list_display = ('name', 'cv_file', 'uploaded_at')
     readonly_fields = ('uploaded_at',)
