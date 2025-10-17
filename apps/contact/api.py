@@ -3,39 +3,55 @@
 from django.http import FileResponse
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated # 👈 Importa IsAuthenticated si lo necesitas
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .models import ContactSubmission, CVDocument # 👈 Importa CVDocument
-from .serializers import ContactSubmissionSerializer
+# Importaciones necesarias para ambos ViewSets
+from .renderers import PassthroughRenderer
+from .models import ContactSubmission, CVDocument
+from .serializers import ContactSubmissionSerializer, CVDocumentSerializer
 
+# -------------------------------------------------------------------
+# ViewSet #1: Solo para el Formulario de Contacto
+# -------------------------------------------------------------------
 class ContactSubmissionViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
-    API endpoint para envíos de contacto y descarga de CV.
+    API endpoint que solo permite crear (POST) nuevos envíos de contacto.
     """
     queryset = ContactSubmission.objects.all()
     serializer_class = ContactSubmissionSerializer
+    # La acción de descarga ha sido movida al CVDocumentViewSet para mantener el código limpio.
 
-    # 👇 AÑADE ESTA ACCIÓN PERSONALIZADA DENTRO DE LA CLASE 👇
+
+# -------------------------------------------------------------------
+# ViewSet #2: Solo para la gestión del CV
+# -------------------------------------------------------------------
+class CVDocumentViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet para listar y descargar documentos de CV.
+    """
+    queryset = CVDocument.objects.all().order_by('-uploaded_at')
+    serializer_class = CVDocumentSerializer
+    permission_classes = [AllowAny] # Puedes cambiarlo a IsAuthenticated si lo necesitas
+
     @action(
         detail=False,
         methods=['get'],
-        permission_classes=[AllowAny], # 🛡️ CAMBIA A [IsAuthenticated] PARA PROTEGERLO
-        url_path='download-cv'
-        renderer_classes=[PassthroughRenderer] # Use the new renderer here
+        url_path='download-latest',
+        renderer_classes=[PassthroughRenderer] # Usa el renderizador para archivos
     )
-    def download_cv(self, request):
+    def download_latest(self, request):
         """
-        Endpoint seguro para descargar el CV desde la base de datos.
+        Endpoint para descargar el CV más reciente.
         """
-        try:
-            cv_document = CVDocument.objects.latest('uploaded_at')
-            return FileResponse(
-                cv_document.cv_file.open('rb'),
+        latest_cv = self.get_queryset().first() # Obtenemos el primero (más reciente)
+        
+        if latest_cv:
+            response = FileResponse(
+                latest_cv.cv_file.open('rb'),
                 as_attachment=True,
-                filename=cv_document.cv_file.name.split('/')[-1]
+                filename=latest_cv.cv_file.name.split('/')[-1]
             )
-        except CVDocument.DoesNotExist:
-            return Response({"error": "El archivo CV no fue encontrado."}, status=404)
-        except Exception:
-            return Response({"error": "Ocurrió un error al procesar el archivo."}, status=500)
+            return response
+        
+        return Response({"error": "No CV file has been uploaded."}, status=404)
