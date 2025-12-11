@@ -28,4 +28,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 # Comando por defecto (puede sobrescribirse en docker-compose o CLI)
 # Editar según el tipo de aplicación (WSGI con gunicorn o ASGI con uvicorn)
-CMD ["gunicorn", "portfolio.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "portfolio.wsgi:application", "--bind", "0.0.0.0:8001"]
