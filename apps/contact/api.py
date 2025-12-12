@@ -6,7 +6,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-# Importaciones necesarias para ambos ViewSets
+# --- NUEVOS IMPORTS PARA ARREGLAR SWAGGER ---
+from drf_spectacular.utils import extend_schema, OpenApiTypes
+
 from .renderers import PassthroughRenderer
 from .models import ContactSubmission, CVDocument
 from .serializers import ContactSubmissionSerializer, CVDocumentSerializer
@@ -20,7 +22,6 @@ class ContactSubmissionViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet)
     """
     queryset = ContactSubmission.objects.all()
     serializer_class = ContactSubmissionSerializer
-    # La acción de descarga ha sido movida al CVDocumentViewSet para mantener el código limpio.
 
 
 # -------------------------------------------------------------------
@@ -32,21 +33,33 @@ class CVDocumentViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = CVDocument.objects.all().order_by('-uploaded_at')
     serializer_class = CVDocumentSerializer
-    permission_classes = [AllowAny] # Puedes cambiarlo a IsAuthenticated si lo necesitas
+    permission_classes = [AllowAny]
 
+    # --- AQUI ESTA EL ARREGLO ---
+    @extend_schema(
+        # Le decimos a Swagger: "La respuesta es un archivo binario (PDF), no intentes leer JSON"
+        responses={
+            (200, 'application/pdf'): OpenApiTypes.BINARY
+        },
+        description="Descarga el último CV disponible."
+    )
     @action(
         detail=False,
         methods=['get'],
         url_path='download-latest',
-        renderer_classes=[PassthroughRenderer] # Usa el renderizador para archivos
+        renderer_classes=[PassthroughRenderer]
     )
     def download_latest(self, request):
         """
         Endpoint para descargar el CV más reciente.
         """
-        latest_cv = self.get_queryset().first() # Obtenemos el primero (más reciente)
+        latest_cv = self.get_queryset().first()
         
         if latest_cv:
+            # Aseguramos que el archivo exista antes de abrirlo
+            if not latest_cv.cv_file:
+                return Response({"error": "File not found on server."}, status=404)
+
             response = FileResponse(
                 latest_cv.cv_file.open('rb'),
                 as_attachment=True,

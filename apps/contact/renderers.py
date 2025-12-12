@@ -1,14 +1,10 @@
-# apps/contact/renderers.py
+from rest_framework import renderers
 
-from rest_framework.renderers import BaseRenderer
-
-class PassthroughRenderer(BaseRenderer):
-    """
-    Renderer that simply returns the data stream as-is.
-    Used for Django's FileResponse.
-    """
-    media_type = '*/*'
-    format = None
+class PassthroughRenderer(renderers.BaseRenderer):
+    # --- LA LÍNEA QUE FALTABA Y CAUSABA EL ERROR 500 ---
+    media_type = 'application/octet-stream' 
+    # ---------------------------------------------------
+    format = 'file'
     charset = None
     render_style = 'binary'
 
