@@ -163,8 +163,11 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Backend SPORT API (No Auth)",
+    "DESCRIPTION": "Documentación de la API de Portfolio",  # <--- AGREGA ESTA LÍNEA
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # Opcional: Esto ayuda si tienes problemas con componentes
+    "COMPONENT_SPLIT_REQUEST": True
 }
 
 
